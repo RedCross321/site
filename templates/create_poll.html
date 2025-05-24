@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}Создать опрос{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="mb-0">Создать новый опрос</h2>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="{{ poll_form.title.id_for_label }}" class="form-label">Название опроса</label>
+                        {{ poll_form.title }}
+                    </div>
+                    <div class="mb-3">
+                        <label for="{{ poll_form.description.id_for_label }}" class="form-label">Описание</label>
+                        {{ poll_form.description }}
+                    </div>
+                    <button type="submit" class="btn btn-primary">Создать опрос</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

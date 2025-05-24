@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ poll.title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="mb-0">{{ poll.title }}</h2>
+            </div>
+            <div class="card-body">
+                <p class="lead">{{ poll.description }}</p>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> Все вопросы обязательны для ответа
+                </div>
+                <form method="post">
+                    {% csrf_token %}
+                    {% for question, form in question_forms %}
+                        <div class="question-block mb-4">
+                            <h4>{{ forloop.counter }}. {{ question.text }} <span class="text-danger">*</span></h4>
+                            {% if question.question_type == 'single_choice' %}
+                                <div class="choices-list">
+                                    {% for field in form %}
+                                        {{ field }}
+                                    {% endfor %}
+                                </div>
+                            {% elif question.question_type == 'multiple_choice' %}
+                                <div class="choices-list">
+                                    {{ form.multiple_choices }}
+                                </div>
+                            {% else %}
+                                {{ form.text_answer }}
+                            {% endif %}
+                            {% if form.errors %}
+                                <div class="alert alert-danger mt-2">
+                                    {% for field, errors in form.errors.items %}
+                                        {% for error in errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                    <button type="submit" class="btn btn-primary">Отправить ответы</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.choices-list {
+    margin-left: 1rem;
+}
+.choices-list label {
+    display: block;
+    margin-bottom: 0.5rem;
+}
+.question-block {
+    background-color: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+}
+</style>
+{% endblock %} 

@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}Главная страница{% endblock %}
+
+{% block content %}
+<div class="welcome-section text-center mb-5">
+    <h1 class="display-4 fw-bold mb-2">Добро пожаловать в <span class="text-primary">PollMaster</span>!</h1>
+    <p class="lead">Создавайте, проходите и анализируйте опросы легко и удобно.</p>
+    {% if user.is_authenticated %}
+        <div class="mt-4 d-flex flex-wrap justify-content-center gap-3">
+            <a href="{% url 'create_poll' %}" class="btn btn-lg btn-primary shadow"><i class="fa-solid fa-plus"></i> Создать опрос</a>
+            <a href="{% url 'profile' %}" class="btn btn-lg btn-success shadow"><i class="fa-solid fa-user"></i> Личный кабинет</a>
+        </div>
+    {% else %}
+        <div class="mt-4 d-flex flex-wrap justify-content-center gap-3">
+            <a href="{% url 'login' %}" class="btn btn-lg btn-primary shadow"><i class="fa-solid fa-sign-in-alt"></i> Войти</a>
+            <a href="{% url 'register' %}" class="btn btn-lg btn-success shadow"><i class="fa-solid fa-user-plus"></i> Зарегистрироваться</a>
+        </div>
+    {% endif %}
+</div>
+
+{% if polls %}
+<div class="polls-section mt-5">
+    <h2 class="mb-4 text-center"><i class="fa-solid fa-list-check text-primary"></i> Доступные опросы</h2>
+    <div class="row g-4">
+        {% for poll in polls %}
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body d-flex flex-column">
+                    <h3 class="card-title mb-2"><i class="fa-solid fa-clipboard-question text-secondary me-2"></i>{{ poll.title }}</h3>
+                    <p class="card-text text-muted mb-2">{{ poll.description }}</p>
+                    <div class="mb-2">
+                        <span class="badge bg-info text-dark"><i class="fa-solid fa-user"></i> {{ poll.author.profile.first_name }} {{ poll.author.profile.last_name }}</span>
+                        <span class="badge bg-light text-secondary"><i class="fa-regular fa-calendar"></i> {{ poll.created_at|date:"d.m.Y H:i" }}</span>
+                    </div>
+                    <a href="{% url 'take_poll' poll.id %}" class="btn btn-outline-primary mt-auto w-100"><i class="fa-solid fa-play"></i> Пройти опрос</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% else %}
+<div class="polls-section mt-5">
+    <div class="alert alert-info text-center shadow-sm">
+        <h4 class="alert-heading"><i class="fa-solid fa-circle-info"></i> Нет доступных опросов</h4>
+        <p>В данный момент нет доступных опросов для прохождения.</p>
+        {% if user.is_authenticated %}
+            <hr>
+            <p class="mb-0">Вы можете <a href="{% url 'create_poll' %}">создать свой опрос</a> или проверить свои опросы в <a href="{% url 'profile' %}">личном кабинете</a>.</p>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+{% endblock %} 

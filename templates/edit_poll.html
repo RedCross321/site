@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}Редактирование опроса{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Редактирование опроса</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div class="card mb-4">
+            <div class="card-body">
+                {{ poll_form.as_p }}
+            </div>
+        </div>
+        <div class="d-flex justify-content-between">
+            <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+            <a href="{% url 'edit_questions' poll.id %}" class="btn btn-secondary">Редактировать вопросы</a>
+        </div>
+    </form>
+</div>
+{% endblock %} 

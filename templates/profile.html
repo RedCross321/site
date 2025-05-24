@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block title %}Личный кабинет{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Добро пожаловать, {{ user.username }}!</h2>
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4>Информация о пользователе</h4>
+        </div>
+        <div class="card-body">
+            <p><strong>Имя:</strong> {{ user.profile.first_name }}</p>
+            <p><strong>Фамилия:</strong> {{ user.profile.last_name }}</p>
+            <p><strong>Имя пользователя:</strong> {{ user.username }}</p>
+            <p><strong>Email:</strong> {{ user.email }}</p>
+            <a href="{% url 'edit_profile' %}" class="btn btn-secondary">Редактировать профиль</a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4>Созданные опросы</h4>
+                </div>
+                <div class="card-body">
+                    {% if created_polls %}
+                        {% for poll in created_polls %}
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ poll.title }}</h5>
+                                    <p class="card-text">{{ poll.description }}</p>
+                                    <p class="card-text">
+                                        <small class="text-muted">Создан: {{ poll.created_at|date:"d.m.Y H:i" }}</small>
+                                    </p>
+                                    <div class="btn-group">
+                                        <a href="{% url 'poll_results' poll.id %}" class="btn btn-primary">Результаты</a>
+                                        <a href="{% url 'edit_poll' poll.id %}" class="btn btn-secondary">Редактировать</a>
+                                        <a href="{% url 'delete_poll' poll.id %}" class="btn btn-danger" onclick="return confirm('Вы уверены, что хотите удалить этот опрос?');">Удалить</a>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">У вас пока нет созданных опросов.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Ответы на ваши опросы</h4>
+                </div>
+                <div class="card-body">
+                    {% if responses %}
+                        {% for response in responses %}
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ response.poll.title }}</h5>
+                                    <p class="card-text">
+                                        {% if response.user %}
+                                            <strong>Пользователь:</strong> {{ response.user.username }}
+                                        {% else %}
+                                            <strong>Респондент:</strong> {{ response.respondent_name }} {{ response.respondent_surname }}
+                                        {% endif %}
+                                    </p>
+                                    <p class="card-text">
+                                        <small class="text-muted">Дата ответа: {{ response.created_at|date:"d.m.Y H:i" }}</small>
+                                    </p>
+                                    <a href="{% url 'poll_results' response.poll.id %}" class="btn btn-primary">Подробнее</a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">Пока нет ответов на ваши опросы.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

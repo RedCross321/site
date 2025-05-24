@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block title %}Добавить вопросы{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="mb-0">Добавить вопрос к опросу "{{ poll.title }}"</h2>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="{{ question_form.text.id_for_label }}" class="form-label">Текст вопроса</label>
+                        {{ question_form.text }}
+                    </div>
+                    <div class="mb-3">
+                        <label for="{{ question_form.question_type.id_for_label }}" class="form-label">Тип вопроса</label>
+                        {{ question_form.question_type }}
+                    </div>
+
+                    <div id="choices-container" class="mb-3">
+                        <h4>Варианты ответов</h4>
+                        {{ choice_formset.management_form }}
+                        <div id="choices-forms-list">
+                            {% for form in choice_formset %}
+                                <div class="choice-form mb-2 d-flex align-items-center">
+                                    {{ form.text }}
+                                    <button type="button" class="btn btn-danger btn-sm ms-2 remove-choice">–</button>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <button type="button" id="add-choice" class="btn btn-secondary btn-sm mt-2">Добавить вариант</button>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" name="add_another" class="btn btn-secondary">Добавить еще вопрос</button>
+                        <button type="submit" class="btn btn-primary">Завершить создание опроса</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const questionType = document.querySelector('#{{ question_form.question_type.id_for_label }}');
+    const choicesContainer = document.querySelector('#choices-container');
+    const addChoiceBtn = document.getElementById('add-choice');
+    const choicesFormsList = document.getElementById('choices-forms-list');
+    let totalForms = document.querySelector('#id_choices-TOTAL_FORMS');
+
+    function toggleChoices() {
+        if (questionType.value === 'single_choice' || questionType.value === 'multiple_choice') {
+            choicesContainer.style.display = 'block';
+        } else {
+            choicesContainer.style.display = 'none';
+        }
+    }
+
+    questionType.addEventListener('change', toggleChoices);
+    toggleChoices();
+
+    // Динамическое добавление поля
+    addChoiceBtn.addEventListener('click', function() {
+        const formIdx = parseInt(totalForms.value);
+        const emptyFormHtml = `{{ choice_formset.empty_form.text|escapejs }}`.replace(/__prefix__/g, formIdx);
+        const wrapper = document.createElement('div');
+        wrapper.className = 'choice-form mb-2 d-flex align-items-center';
+        wrapper.innerHTML = emptyFormHtml + '<button type="button" class="btn btn-danger btn-sm ms-2 remove-choice">–</button>';
+        choicesFormsList.appendChild(wrapper);
+        totalForms.value = formIdx + 1;
+    });
+
+    // Динамическое удаление поля
+    choicesFormsList.addEventListener('click', function(e) {
+        if (e.target.classList.contains('remove-choice')) {
+            const formDiv = e.target.closest('.choice-form');
+            formDiv.remove();
+            // Пересчитать totalForms
+            let count = choicesFormsList.querySelectorAll('.choice-form').length;
+            totalForms.value = count;
+        }
+    });
+});
+</script>
+{% endblock %} 

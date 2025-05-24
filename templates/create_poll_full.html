@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}Создать опрос{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header">
+            <h2>Создать опрос</h2>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                <h4>Основная информация</h4>
+                {{ poll_form.as_p }}
+                <hr>
+                <h4>Вопросы</h4>
+                {{ question_formset.management_form }}
+                <div id="questions-list">
+                    {% for form in question_formset %}
+                        <div class="question-form mb-3 border rounded p-3">
+                            <h5>Вопрос {{ forloop.counter }}</h5>
+                            {{ form.id }}
+                            {{ form.text.label_tag }}
+                            {{ form.text }}
+                            {{ form.question_type.label_tag }}
+                            {{ form.question_type }}
+                            {% if question_formset.can_delete %}
+                                {{ form.DELETE }} <label>Удалить</label>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+                <button type="submit" class="btn btn-primary">Создать опрос</button>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+// Динамическое добавление вопросов (можно доработать)
+</script>
+{% endblock %} 

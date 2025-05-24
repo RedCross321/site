@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+
+{% block title %}Результаты опроса: {{ poll.title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="mb-0">{{ poll.title }}</h2>
+            </div>
+            <div class="card-body">
+                <p class="lead">{{ poll.description }}</p>
+                
+                {% if responses %}
+                    {% for response in responses %}
+                        <div class="response-block mb-4">
+                            <h4>Ответ от: 
+                                {% if response.user %}
+                                    {{ response.user.username }}
+                                {% else %}
+                                    {{ response.respondent_name }} {{ response.respondent_surname }}
+                                {% endif %}
+                            </h4>
+                            <p class="text-muted">Дата: {{ response.created_at|date:"d.m.Y H:i" }}</p>
+                            
+                            <div class="answers-list">
+                                {% for question in poll.questions.all %}
+                                    <div class="mb-2">
+                                        <strong>{{ question.text }}</strong><br>
+                                        {% if question.question_type == 'multiple_choice' %}
+                                            {% for answer in response.answers.all %}
+                                                {% if answer.question_id == question.id and answer.choice %}
+                                                    <span class="badge bg-primary">{{ answer.choice.text }}</span>
+                                                {% endif %}
+                                            {% empty %}
+                                                <span class="text-muted">Нет ответа</span>
+                                            {% endfor %}
+                                        {% elif question.question_type == 'single_choice' %}
+                                            {% for answer in response.answers.all %}
+                                                {% if answer.question_id == question.id and answer.choice %}
+                                                    {{ answer.choice.text }}
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% else %}
+                                            {% for answer in response.answers.all %}
+                                                {% if answer.question_id == question.id and answer.text_answer %}
+                                                    {{ answer.text_answer }}
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% if not forloop.last %}
+                            <hr>
+                        {% endif %}
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">Пока нет ответов на этот опрос.</p>
+                {% endif %}
+                
+                <div class="mt-4">
+                    <a href="{% url 'profile' %}" class="btn btn-primary">Вернуться в личный кабинет</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h3 class="mt-4">Статистика по вопросам</h3>
+<div id="questions-stats">
+    {% for stat in questions_stats_obj %}
+        <div class="mb-4">
+            <h5>{{ stat.text }}</h5>
+            {% if stat.type == 'single_choice' or stat.type == 'multiple_choice' %}
+                <canvas id="chart-question-{{ stat.id }}" height="120"></canvas>
+                <ul>
+                    {% for choice in stat.choices %}
+                        <li>{{ choice.text }} — {{ choice.count }} ответ(ов)</li>
+                    {% endfor %}
+                </ul>
+            {% elif stat.type == 'text' %}
+                <p>Всего ответов: {{ stat.total }}</p>
+                <ul>
+                    {% for answer in stat.answers %}
+                        <li>{{ answer }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+    {% endfor %}
+</div>
+
+<style>
+.response-block {
+    background-color: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+}
+.answers-list {
+    margin-top: 1rem;
+}
+.answer-item {
+    background-color: white;
+    padding: 1rem;
+    border-radius: 0.25rem;
+    border: 1px solid #dee2e6;
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const stats = JSON.parse("{{ questions_stats|escapejs }}");
+stats.forEach(function(stat) {
+    if (stat.type === 'single_choice' || stat.type === 'multiple_choice') {
+        const ctx = document.getElementById('chart-question-' + stat.id);
+        if (ctx) {
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: stat.choices.map(c => c.text),
+                    datasets: [{
+                        label: 'Количество ответов',
+                        data: stat.choices.map(c => c.count),
+                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, precision: 0 }
+                    }
+                }
+            });
+        }
+    }
+});
+</script>
+{% endblock %} 
